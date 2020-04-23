@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>AJAX Example</title>
+
+    <script src="https://code.jquery.com/jquery-3.4.1.js" integrity="sha256-WpOohJOqMqqyKL9FccASB9O0KwACQJpFTUBLTYOVvVU=" crossorigin="anonymous"></script>
+</head>
+
+<body>
+
+    <script>
+        function shoot() {
+            $(function() {
+                timer = setInterval(function test() {
+                    var radioVal = $("input:radio[name='time']:checked").val();
+                    console.log(radioVal);
+
+                    $.ajax({
+                        type: 'POST',
+                        url: '/world',
+                        data: {
+                            Time: radioVal
+                        },
+                        dataType: 'text', //이게 만약 json이면 플라스크에서도 json 으로 응답해야함
+                        success: function(result) {
+                            // alert("result = "+ result);
+                            $("#content").text(result)
+                        },
+                        error: function(xtr, status, error) {
+                            alert(xtr + ":" + status + ":" + error);
+                        }
+
+                    });
+                }, 500);
+            });
+
+        }
+    </script>
+
+    <h2>원하는 국가를 설정해주세요.</h2>
+
+    <input type="radio" name="time" value='UTC' />런던, 아이스란드
+    <input type="radio" name="time" value='Poland' /> 프랑스, 폴란드, 독일, 이탈리아
+    <input type="radio" name="time" value='Turkey' /> 터키
+    <input type="radio" name="time" value='US/Eastern' /> 미국동부
+    <input type="radio" name="time" value='Singapore' /> 싱가폴
+    <input type="radio" name="time" value='Asia/Seoul' /> 서울
+    <input type="button" value="정보 넘기기" onclick="shoot()">
+
+    <H2>world time :
+        <h1 id="text1"> </h1>
+    </H2>
+    <p id=content> </p>
+</body>
+
+</html>
