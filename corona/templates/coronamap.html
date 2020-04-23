@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API 연습</title>
+
+    <style>
+        div {
+            width: 100%;
+            height: 300px;
+        }
+        
+        div.left {
+            width: 50%;
+            float: left;
+            box-sizing: border-box;
+        }
+        
+        div.right {
+            width: 50%;
+            float: right;
+            box-sizing: border-box;
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <div class="left">
+        <input type="text" id=adrname>
+        <input type="button" onclick="getaddress();" value="주소를 적어주세요">
+        <p id=content> </p>
+    </div>
+
+    <div class="right">
+        <div id="map" style="width:100%;height:700px;"></div>
+    </div>
+
+
+    <script src="https://code.jquery.com/jquery-3.4.1.js" integrity="sha256-WpOohJOqMqqyKL9FccASB9O0KwACQJpFTUBLTYOVvVU=" crossorigin="anonymous"></script>
+
+
+    <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=c6dab2013d215a62aeba6d366142b31b"></script>
+
+    <script>
+        var nowlat = 33.450701; //기본 위치
+        var nowlng = 126.570667; //기본위치
+        var address;
+        var arrNumber = []; //배열선언
+        var lat = []; //경도
+        var lng = []; //위도 var lng[] 과 같은말 
+        var positions = [];
+        var marker;
+        var count;
+        var message = '';
+
+
+        // 마커 이미지의 이미지 주소입니다
+        var imageSrc = "http://t1.daumcdn.net/localimg/localimages/07/mapapidoc/markerStar.png";
+        var container = document.getElementById('map');
+        var options = {
+            center: new kakao.maps.LatLng(nowlat, nowlng),
+            level: 3
+        };
+        var map = new kakao.maps.Map(container, options); // 지도를 생성합니다
+
+        // 마커 이미지의 이미지 크기 입니다
+        var imageSize = new kakao.maps.Size(24, 35);
+
+        // 마커 이미지를 생성합니다    
+        var markerImage = new kakao.maps.MarkerImage(imageSrc, imageSize);
+
+
+
+
+
+        function getaddress() {
+            $("#content *").remove(); //append된 요소들을 삭제해야하는데 이상하게 위도 경도는 삭제가 안되서
+            $("#content").text(""); //그냥 text로 수정했다. 이렇게 하니 안에 내부요소가 다 삭제되고 재검색했을때 전의 기록이 남지 않는다.
+
+            console.log()
+            address = $('#adrname').val();
+
+            $.ajax({
+                    method: "GET",
+                    url: "https://8oi9s0nnth.apigw.ntruss.com/corona19-masks/v1/storesByAddr/json?address=" + address
+
+
+                })
+                .done(function(msg) {
+                    alert("Data Saved: " + msg);
+                    for (var i = 0; i < msg.count; i++) {
+                        arrNumber[i] = "주소: " + msg.stores[i].addr + "<br>" + "판매처 정보 :" + msg.stores[i].name + "<br>" + "재고 상태 :" + msg.stores[i].remain_stat + "<br>";
+                        message += "가게 이름 : " + msg.stores[i].name + '  재고상태 :' + msg.stores[i].remain_stat + '\n'
+                    }
+
+                    for (var i = 0; i < msg.count; i++) {
+                        lat[i] = "위도: " + msg.stores[i].lat + "<br>";
+                    }
+
+                    for (var i = 0; i < msg.count; i++) {
+                        lng[i] = "경도: " + msg.stores[i].lng + "<br>" + "<br>" + "<br>";
+                    }
+
+                    for (var i = 0; i < msg.count; i++)
+
+                    {
+
+
+                        positions.push({
+                            title: msg.stores[i].name,
+                            latlng: new kakao.maps.LatLng(msg.stores[i].lat, msg.stores[i].lng)
+
+                        });
+
+                        console.log(positions)
+
+                    }
+
+
+                    for (var i = 0; i < arrNumber.length; i++) { //배열 출력
+
+                        $("#content").append("<strong>" + arrNumber[i] + "</strong>" + lat[i] + lng[i]);
+
+
+                    }
+
+
+
+                    nowlat = msg.stores[0].lat;
+                    nowlng = msg.stores[0].lng;
+                    count = msg.count;
+
+                    //마커찍어주고 지도 이동 함수 호출
+
+                    setCenter();
+                    makermaking();
+                    messeage();
+                });
+
+
+            //지도이동 함수 호출
+
+
+        }
+
+        function messeage() {
+
+
+            console.log(" 메세지를 성공적으로 보냈습니다");
+            address = $('#adrname').val();
+            $.ajax({ //실수로 get으로 만들어가지고 유알엘 2000자리넘으면 오류남  나중에 post로 수정해야함
+                    method: "POST",
+                    url: "http://localhost:3000/corona",
+                    data: {
+                        data: address
+                    },
+
+                })
+                .done(function(msg) {
+                    alert("Data Saved: " + msg);
+
+                });
+
+        }
+
+
+        //마커찍어주고 지도 이동 함수 정의
+        function makermaking() {
+
+
+            ///마커찍기
+            for (var i = 0; i < positions.length; i++) {
+
+                // 마커를 생성합니다
+
+                marker = new kakao.maps.Marker({
+                    map: map, // 마커를 표시할 지도
+                    position: positions[i].latlng, // 마커를 표시할 위치
+                    title: positions[i].title, // 마커의 타이틀, 마커에 마우스를 올리면 타이틀이 표시됩니다
+                    image: markerImage, // 마커 이미지 
+                });
+
+
+                // 인포윈도우를 생성합니다
+                var infowindow = new kakao.maps.InfoWindow({
+                    content: positions[i].title // 인포윈도우에 표시할 내용
+                });
+
+
+
+                kakao.maps.event.addListener(marker, 'mouseover', makeOverListener(map, marker, infowindow));
+                kakao.maps.event.addListener(marker, 'mouseout', makeOutListener(infowindow));
+
+                marker.setMap(map);
+            }
+
+
+
+
+            console.log(marker);
+
+
+
+
+        }
+
+        //지도이동 함수 정의
+        function setCenter() {
+            // 이동할 위도 경도 위치를 생성합니다 
+            var moveLatLon = new kakao.maps.LatLng(nowlat, nowlng);
+
+            // 지도 중심을 이동 시킵니다
+            map.setCenter(moveLatLon);
+            // console.log("팝하기 전 " + arrNumber);
+            for (var i = 0; i < positions.length; i++) {
+                arrNumber.pop();
+                lat.pop();
+                lng.pop();
+
+                // console.log("팝 하고 난 후 " + arrNumber);
+
+            }
+
+            console.log(marker);
+        }
+
+
+
+        // 인포윈도우를 표시하는 클로저를 만드는 함수입니다 
+        function makeOverListener(map, marker, infowindow) {
+            return function() {
+                infowindow.open(map, marker);
+            };
+        }
+
+        // 인포윈도우를 닫는 클로저를 만드는 함수입니다 
+        function makeOutListener(infowindow) {
+            return function() {
+                infowindow.close();
+            };
+        }
+    </script>
+
+
+</body>
+
+
+</html>
