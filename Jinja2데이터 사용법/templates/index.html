@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>AJAX Example</title>
+
+    <script src="https://code.jquery.com/jquery-3.4.1.js" integrity="sha256-WpOohJOqMqqyKL9FccASB9O0KwACQJpFTUBLTYOVvVU=" crossorigin="anonymous"></script>
+</head>
+
+<body>
+
+    <script>
+        $.ajax({
+            type: "POST",
+            url: '/info',
+            data: {
+                name: "John",
+                location: "Boston"
+            },
+            dataType: 'text',
+            success: function(result) {
+                $("#test").html(result);
+            },
+            error: function(xhr, status, error) {
+                error
+            }
+        });
+    </script>
+
+    <h2>전체검색 : <span id="test"></span></h2>
+
+
+
+
+</body>
+
+</html>

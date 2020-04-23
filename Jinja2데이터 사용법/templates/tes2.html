@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API 연습</title>
+</head>
+
+<body>
+
+    <p id=content> </p>
+    <p> </p>
+
+    <div>
+
+        <input type="text" id=adrname>
+        <input type="button" onclick="getBookName();" value="도시를 적어주세요">
+
+
+
+    </div>
+    <script src="https://code.jquery.com/jquery-3.4.1.js" integrity="sha256-WpOohJOqMqqyKL9FccASB9O0KwACQJpFTUBLTYOVvVU=" crossorigin="anonymous"></script>
+    <script>
+        var adr;
+        adr = "부산광역시 사상구"
+
+
+        function getBookName() {
+            $.ajax({
+                    method: "GET",
+                    url: "https://8oi9s0nnth.apigw.ntruss.com/corona19-masks/v1/storesByAddr/json?address=" + adr
+
+
+                })
+                .done(function(msg) {
+                    console.log(msg);
+                    alert("Data Saved: " + msg);
+                });
+
+
+
+
+
+
+        }
+    </script>
+
+
+</body>
+
+
+</html>
